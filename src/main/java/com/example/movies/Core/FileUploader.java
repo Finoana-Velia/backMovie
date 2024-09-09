@@ -1,30 +1,87 @@
 package com.example.movies.Core;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Service
 public class FileUploader {
 
-	private String folderName;
-	private String fileName;
+	private static String path = System.getProperty("user.home");
+	private static String folderPath = path + "\\files\\";
+	private static String filePath;
 	
-	private static void createFolder() {
-		
-	}
-	
-	public static void registerFile(MultipartFile file) {
-		if(!file.isEmpty()) {
-			createFolder();
-			File fileRegister = new File("File path");
+	private static void createMainFolder() {
+		File mainFolder = new File(folderPath);
+		if(!mainFolder.exists()) {
+			mainFolder.mkdir();
+			log.info("Main folder was created in the source path");
 		}
 	}
 	
-	public static void updateFile(MultipartFile file) {
+	private static void createFolder(String folderName) {
+		filePath = folderPath + "\\"+folderName+"\\";
+		File folder = new File(filePath);
+		log.info("Folder : " + folderName + " was created");
+	}
+	
+	public void registerFile(
+			MultipartFile file,
+			String folderName,
+			Long id) throws Exception{
 		if(!file.isEmpty()) {
-			createFolder();
-			System.out.println("Path file folder");
+			createMainFolder();
+			createFolder(folderName);
+			file.transferTo(new File(filePath + id));
+			log.info("File " + file.getOriginalFilename() + " has been created ");
+		}else {
+			log.warn("File not found!");
+		}
+	}
+	
+	public void updateFile(
+			MultipartFile file,
+			String folderName,
+			Long id) throws Exception{
+		if(!file.isEmpty()) {
+			createMainFolder();
+			createFolder(folderName);
+			Path fileUpdate = Paths.get(filePath + id);
+			file.transferTo(fileUpdate);
+			log.info("File " + file.getOriginalFilename() + " has been updated");
 		}
  	} 
 	
+	public File getFile(Long id) {
+		File file = new File(filePath + id);
+		if(file.exists()) {
+			return file;
+		}else {
+			return null;
+		}
+	}
+	
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

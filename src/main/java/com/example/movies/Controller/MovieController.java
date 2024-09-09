@@ -1,5 +1,10 @@
 package com.example.movies.Controller;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.List;
+
+import org.apache.commons.io.IOUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -11,8 +16,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.example.movies.Core.FileUploader;
+import com.example.movies.Dto.MovieRequestDto;
+import com.example.movies.Dto.MovieResponseDto;
 import com.example.movies.Entity.Movie;
 import com.example.movies.Service.Impl.MovieServiceImpl;
 
@@ -21,34 +31,83 @@ import com.example.movies.Service.Impl.MovieServiceImpl;
 public class MovieController {
 	
 	private final MovieServiceImpl movieService;
+	private final FileUploader fileUploader;
 	
-	public MovieController(MovieServiceImpl movieService) {
+	public MovieController(
+			MovieServiceImpl movieService,
+			FileUploader fileUploader) {
 		this.movieService = movieService;
+		this.fileUploader = fileUploader;
+	}
+	
+	@GetMapping
+	public ResponseEntity<List<MovieResponseDto>> findAll() {
+		List<MovieResponseDto> movies = this.movieService.findAll();
+		return ResponseEntity.status(HttpStatus.OK).body(movies);
 	}
 	
 	@GetMapping("/search")
-	public ResponseEntity<Page<Movie>> searchByTitle(
+	public ResponseEntity<Page<MovieResponseDto>> searchByTitle(
 			@RequestParam(defaultValue = "")String title,
 			@RequestParam(defaultValue="0") int page,
 			@RequestParam(defaultValue="10")int size
 			){
 		PageRequest request = PageRequest.of(page, size);
-		Page<Movie> movies = this.movieService.searchByTitl(title, request);
+		Page<MovieResponseDto> movies = this.movieService.searchByTitl(title, request);
 		return ResponseEntity.status(HttpStatus.OK).body(movies);
 	}
 	
+	@GetMapping("/jacket")
+	@ResponseBody
+	public byte[] getJacket(Long id) throws Exception {
+		File file = this.fileUploader.getFile(id);
+		return IOUtils.toByteArray(new FileInputStream(file));
+	}
+	
+	@GetMapping("/{id}")
+	public ResponseEntity<?> findById(@PathVariable Long id) {
+		MovieResponseDto movie = this.movieService.findById(id);
+		return ResponseEntity.status(HttpStatus.OK).body(movie);
+	}
+
 	@PostMapping
-	public ResponseEntity<Movie> create(Movie movie) {
+	public ResponseEntity<MovieResponseDto> create(
+			@RequestParam(name="jacket")MultipartFile file,
+			MovieRequestDto movie
+			)  throws Exception{
+		MovieResponseDto movieResponse;
+		if(!file.isEmpty()) {
+			movie.setJacket(file.getOriginalFilename());
+			movieResponse = this.movieService.create(movie);
+			this.fileUploader.registerFile(file, "movie", movieResponse.getId());
+			return ResponseEntity
+					.status(HttpStatus.CREATED)
+					.body(movieResponse);
+		}else {
+			movieResponse = this.movieService.create(movie);
+		}
 		return ResponseEntity
 				.status(HttpStatus.CREATED)
-				.body(this.movieService.create(movie));
+				.body(movieResponse);
 	}
 	
 	@PutMapping("/{id}")
-	public ResponseEntity<Movie> update(@PathVariable Long id,Movie movie) {
+	public ResponseEntity<MovieResponseDto> update(
+			@RequestParam(name="jacket")MultipartFile file,
+			@PathVariable Long id,
+			MovieRequestDto movie
+			) throws Exception{
+		MovieResponseDto movieResponse;
+		if(!file.isEmpty()) {
+			movie.setJacket(file.getOriginalFilename());
+			movieResponse = this.movieService.update(id,movie);
+			this.fileUploader.updateFile(file, "movie", id);
+		}else {
+			movieResponse = this.movieService.update(id, movie);
+		}
 		return ResponseEntity
 				.status(HttpStatus.OK)
-				.body(this.movieService.update(id, movie));
+				.body(movieResponse);
 	}
 	
 	@DeleteMapping("/{id}")
