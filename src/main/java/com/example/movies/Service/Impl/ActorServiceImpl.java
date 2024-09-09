@@ -6,6 +6,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.example.movies.Core.EntityMapper;
+import com.example.movies.Dto.ActorDto;
 import com.example.movies.Entity.Actor;
 import com.example.movies.Repository.ActorRepository;
 import com.example.movies.Service.ActorService;
@@ -15,39 +17,51 @@ import lombok.AllArgsConstructor;
 @Service
 @AllArgsConstructor
 public class ActorServiceImpl implements ActorService{
+	public final ActorRepository actorRepository;
+	public final EntityMapper entityMapper;
 	
-	private final ActorRepository actorRepository;
-
 	@Override
-	public List<Actor> findAll() {
-		return this.actorRepository.findAll();
+	public List<ActorDto> findAll() {
+		return this.actorRepository.findAll()
+				.stream()
+				.map(actors -> entityMapper.toDtoActor(actors))
+				.toList();
 	}
 
 	@Override
-	public Page<Actor> searchByName(String name, Pageable pageable) {
-		return this.actorRepository.searchByName(name,pageable);
+	public Page<ActorDto> searchByName(String name, Pageable pageable) {
+		return this.actorRepository.searchByName(name, pageable)
+				.map(actors -> entityMapper.toDtoActor(actors));
 	}
 
 	@Override
-	public Actor findById(Long id) {
-		return this.actorRepository.findById(id).orElseThrow();
+	public ActorDto findById(Long id) {
+		return this.actorRepository.findById(id)
+				.map(actor -> entityMapper.toDtoActor(actor))
+				.orElseThrow();
 	}
 
 	@Override
-	public Actor save(Actor actor) {
-		return this.actorRepository.save(actor);
+	public ActorDto save(ActorDto actor) {
+		Actor actorSaved = entityMapper.toEntityActor(actor);
+		this.actorRepository.save(actorSaved);
+		return actor;
 	}
 
 	@Override
-	public Actor update(Long id,Actor actor) {
-		return this.actorRepository.findById(id).map(
-				actorUpdate -> this.actorRepository.save(actor) 
-				).orElseThrow();
+	public ActorDto update(Long id, ActorDto actor) {
+		Actor actorMapper = entityMapper.toEntityActor(actor);
+		return this.actorRepository.findById(id)
+				.map(actorUpdated -> this.actorRepository.save(actorMapper))
+				.map(actorInit -> entityMapper.toDtoActor(actorMapper))
+				.orElseThrow();
 	}
 
 	@Override
 	public void delete(Long id) {
 		this.actorRepository.deleteById(id);
 	}
+	
+	
 
 }

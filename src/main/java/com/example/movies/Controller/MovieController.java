@@ -80,9 +80,6 @@ public class MovieController {
 			movie.setJacket(file.getOriginalFilename());
 			movieResponse = this.movieService.create(movie);
 			this.fileUploader.registerFile(file, "movie", movieResponse.getId());
-			return ResponseEntity
-					.status(HttpStatus.CREATED)
-					.body(movieResponse);
 		}else {
 			movieResponse = this.movieService.create(movie);
 		}

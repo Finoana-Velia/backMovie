@@ -15,7 +15,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.example.movies.Core.FileUploader;
+import com.example.movies.Dto.ActorDto;
 import com.example.movies.Entity.Actor;
 import com.example.movies.Service.Impl.ActorServiceImpl;
 
@@ -27,40 +30,66 @@ import lombok.AllArgsConstructor;
 public class ActorController {
 	
 	private final ActorServiceImpl actorService;
+	private final FileUploader fileUploader;
 	
 	@GetMapping
-	public ResponseEntity<List<Actor>> findAll() {
-		List<Actor> actors = this.actorService.findAll();
+	public ResponseEntity<List<ActorDto>> findAll() {
+		List<ActorDto> actors = this.actorService.findAll();
 		return ResponseEntity.status(HttpStatus.OK).body(actors);
 	}
 	
 	@GetMapping("/search")
-	public ResponseEntity<Page<Actor>> searchByName(
+	public ResponseEntity<Page<ActorDto>> searchByName(
 			@RequestParam(defaultValue="")String name,
 			@RequestParam(defaultValue="0")int page,
 			@RequestParam(defaultValue="10")int sizw
 			){
 		PageRequest request = PageRequest.of(page, page);
-		Page<Actor> actors = this.actorService.searchByName("%" + name + "%",request);
+		Page<ActorDto> actors = this.actorService.searchByName("%" + name + "%",request);
 		return ResponseEntity.status(HttpStatus.OK).body(actors);
 	}
 	
 	@GetMapping("/{id}")
-	public ResponseEntity<Actor> findById(@PathVariable Long id) {
-		Actor actor = this.actorService.findById(id);
+	public ResponseEntity<ActorDto> findById(@PathVariable Long id) {
+		ActorDto actor = this.actorService.findById(id);
 		return ResponseEntity.status(HttpStatus.OK).body(actor);
 	}
 	
 	@PostMapping
-	public ResponseEntity<Actor> creaete(Actor actor) {
-		Actor actorSaved = this.actorService.save(actor);
-		return ResponseEntity.status(HttpStatus.CREATED).body(actorSaved);
+	public ResponseEntity<ActorDto> creaete(
+			ActorDto actor,
+			@RequestParam(name="prifile")MultipartFile file
+			) throws Exception {
+		ActorDto actorResponse;
+		if(!file.isEmpty()) {
+			actor.setProfile(file.getOriginalFilename());
+			actorResponse = this.actorService.save(actor);
+			this.fileUploader.registerFile(file, "actor", actorResponse.getId());
+			
+		}else {
+			actorResponse = this.actorService.save(actor);
+		}
+		return ResponseEntity.status(HttpStatus.CREATED).body(actorResponse); 
+		
 	}
 	
 	@PutMapping("/{id}")
-	public ResponseEntity<Actor> update(@PathVariable Long id, Actor actor) {
-		Actor actorUpdated = this.actorService.update(id, actor);
-		return ResponseEntity.status(HttpStatus.OK).body(actorUpdated);
+	public ResponseEntity<ActorDto> update(
+			@PathVariable Long id, 
+			ActorDto actor,
+			@RequestParam(name="profile")MultipartFile file) 
+	throws Exception
+	{
+		ActorDto actorResponse;
+		if(!file.isEmpty()) {
+			actor.setProfile(file.getOriginalFilename());
+			actorResponse = this.actorService.update(id,actor);
+			this.fileUploader.updateFile(file, "actor", id);
+		}else {
+			actorResponse = this.actorService.update(id, actor);
+		}
+		//ActorDto actorUpdated = this.actorService.update(id, actor);
+		return ResponseEntity.status(HttpStatus.OK).body(actorResponse);
 	}
 	
 	@DeleteMapping("/{id}")

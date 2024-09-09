@@ -30,12 +30,12 @@ public class EntityMapper {
 				.build();
 	}
 	
-	public Actor toEntityActor(ActorDto actorDto) {
+	public Actor toEntityActor(ActorDto actor) {
 		return Actor.builder()
-				.id(actorDto.getId())
-				.profile(actorDto.getProfile())
-				.firstName(actorDto.getFirstName())
-				.lastName(actorDto.getLastName())
+				.id(actor.getId())
+				.profile(actor.getProfile())
+				.firstName(actor.getFirstName())
+				.lastName(actor.getLastName())
 				.build();
 	}
 	
