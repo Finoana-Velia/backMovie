@@ -42,9 +42,9 @@ public class ActorController {
 	public ResponseEntity<Page<ActorDto>> searchByName(
 			@RequestParam(defaultValue="")String name,
 			@RequestParam(defaultValue="0")int page,
-			@RequestParam(defaultValue="10")int sizw
+			@RequestParam(defaultValue="10")int size
 			){
-		PageRequest request = PageRequest.of(page, page);
+		PageRequest request = PageRequest.of(page, size);
 		Page<ActorDto> actors = this.actorService.searchByName("%" + name + "%",request);
 		return ResponseEntity.status(HttpStatus.OK).body(actors);
 	}
@@ -56,14 +56,15 @@ public class ActorController {
 	}
 	
 	@PostMapping
-	public ResponseEntity<ActorDto> creaete(
+	public ResponseEntity<ActorDto> create(
 			ActorDto actor,
-			@RequestParam(name="prifile")MultipartFile file
+			@RequestParam MultipartFile file
 			) throws Exception {
 		ActorDto actorResponse;
 		if(!file.isEmpty()) {
 			actor.setProfile(file.getOriginalFilename());
 			actorResponse = this.actorService.save(actor);
+			System.out.println(actorResponse);
 			this.fileUploader.registerFile(file, "actor", actorResponse.getId());
 			
 		}else {
@@ -77,7 +78,7 @@ public class ActorController {
 	public ResponseEntity<ActorDto> update(
 			@PathVariable Long id, 
 			ActorDto actor,
-			@RequestParam(name="profile")MultipartFile file) 
+			@RequestParam MultipartFile file) 
 	throws Exception
 	{
 		ActorDto actorResponse;

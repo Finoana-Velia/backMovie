@@ -72,7 +72,7 @@ public class MovieController {
 
 	@PostMapping
 	public ResponseEntity<MovieResponseDto> create(
-			@RequestParam(name="jacket")MultipartFile file,
+			@RequestParam MultipartFile file,
 			MovieRequestDto movie
 			)  throws Exception{
 		MovieResponseDto movieResponse;
@@ -90,7 +90,7 @@ public class MovieController {
 	
 	@PutMapping("/{id}")
 	public ResponseEntity<MovieResponseDto> update(
-			@RequestParam(name="jacket")MultipartFile file,
+			@RequestParam MultipartFile file,
 			@PathVariable Long id,
 			MovieRequestDto movie
 			) throws Exception{
@@ -109,6 +109,7 @@ public class MovieController {
 	
 	@DeleteMapping("/{id}")
 	public ResponseEntity<Void> delete(@PathVariable Long id) {
+		this.movieService.delete(id);
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 }

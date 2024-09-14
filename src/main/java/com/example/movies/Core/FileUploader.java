@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 public class FileUploader {
 
 	private static String path = System.getProperty("user.home");
-	private static String folderPath = path + "\\files\\";
+	private static String folderPath = path + "/files/";
 	private static String filePath;
 	
 	private static void createMainFolder() {
@@ -26,9 +26,13 @@ public class FileUploader {
 	}
 	
 	private static void createFolder(String folderName) {
-		filePath = folderPath + "\\"+folderName+"\\";
+		filePath = folderPath + "/"+folderName+"/";
 		File folder = new File(filePath);
-		log.info("Folder : " + folderName + " was created");
+		if(!folder.exists()) {
+			folder.mkdir();
+			log.info("Folder : " + folderName + " was created");
+		}
+		
 	}
 	
 	public void registerFile(
@@ -64,6 +68,17 @@ public class FileUploader {
 			return file;
 		}else {
 			return null;
+		}
+	}
+	
+	public void deleteFile(Long id, String folder) {
+		filePath = folderPath + "/"+folder+"/" + id;
+		File file = new File(filePath);
+		if(file.exists()) {
+			file.delete();
+			log.warn("File with id : " + id + " into " + folder + " has been deleted");
+		}else {
+			log.warn("This file doesn't exists");
 		}
 	}
 	

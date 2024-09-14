@@ -45,7 +45,7 @@ public class ActorServiceImpl implements ActorService{
 	public ActorDto save(ActorDto actor) {
 		Actor actorSaved = entityMapper.toEntityActor(actor);
 		this.actorRepository.save(actorSaved);
-		return actor;
+		return entityMapper.toDtoActor(actorSaved);
 	}
 
 	@Override
