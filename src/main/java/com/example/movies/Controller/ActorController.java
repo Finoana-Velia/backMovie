@@ -1,7 +1,10 @@
 package com.example.movies.Controller;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.List;
 
+import org.apache.commons.io.IOUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -12,15 +15,18 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.movies.Core.FileUploader;
 import com.example.movies.Dto.ActorDto;
 import com.example.movies.Entity.Actor;
 import com.example.movies.Service.Impl.ActorServiceImpl;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.AllArgsConstructor;
 
@@ -57,11 +63,13 @@ public class ActorController {
 	
 	@PostMapping
 	public ResponseEntity<ActorDto> create(
-			ActorDto actor,
-			@RequestParam MultipartFile file
+			@RequestParam String actorData,
+			@RequestParam(required=false) MultipartFile file
 			) throws Exception {
+		ObjectMapper objectMapper = new ObjectMapper();
+		ActorDto actor = objectMapper.readValue(actorData, ActorDto.class);
 		ActorDto actorResponse;
-		if(!file.isEmpty()) {
+		if(file != null) {
 			actor.setProfile(file.getOriginalFilename());
 			actorResponse = this.actorService.save(actor);
 			System.out.println(actorResponse);
@@ -77,17 +85,20 @@ public class ActorController {
 	@PutMapping("/{id}")
 	public ResponseEntity<ActorDto> update(
 			@PathVariable Long id, 
-			ActorDto actor,
-			@RequestParam MultipartFile file) 
+			@RequestParam String actor,
+			@RequestParam(required=false) MultipartFile file) 
 	throws Exception
 	{
+		ObjectMapper mapper = new ObjectMapper();
+		ActorDto actorDto = mapper.readValue(actor, ActorDto.class);
+		actorDto.setId(id);
 		ActorDto actorResponse;
-		if(!file.isEmpty()) {
-			actor.setProfile(file.getOriginalFilename());
-			actorResponse = this.actorService.update(id,actor);
+		if(file!=null) {
+			actorDto.setProfile(file.getOriginalFilename());
+			actorResponse = this.actorService.update(id,actorDto);
 			this.fileUploader.updateFile(file, "actor", id);
 		}else {
-			actorResponse = this.actorService.update(id, actor);
+			actorResponse = this.actorService.update(id, actorDto);
 		}
 		//ActorDto actorUpdated = this.actorService.update(id, actor);
 		return ResponseEntity.status(HttpStatus.OK).body(actorResponse);
@@ -97,6 +108,17 @@ public class ActorController {
 	public ResponseEntity<Void> delete(@PathVariable Long id) {
 		this.actorService.delete(id);
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+	}
+	
+	@GetMapping("/getImage")
+	@ResponseBody
+	public byte[] getPhoto(Long id) throws Exception {
+		File file = this.fileUploader.getFile(id);
+		if(file.exists()) {
+			return IOUtils.toByteArray(new FileInputStream(file));
+		}else {
+			return null;
+		}
 	}
 
 }

@@ -25,8 +25,11 @@ public class EntityMapper {
 		return ActorDto.builder()
 				.id(actor.getId())
 				.profile(actor.getProfile())
-				.firstName(actor.getFirstName())
-				.lastName(actor.getLastName())
+				.name(actor.getName())
+				.birthDate(actor.getBirthDate())
+				.gender(actor.getGender())
+				.location(actor.getLocation())
+				.biography(actor.getBiography())
 				.build();
 	}
 	
@@ -34,8 +37,11 @@ public class EntityMapper {
 		return Actor.builder()
 				.id(actor.getId())
 				.profile(actor.getProfile())
-				.firstName(actor.getFirstName())
-				.lastName(actor.getLastName())
+				.name(actor.getName())
+				.birthDate(actor.getBirthDate())
+				.gender(actor.getGender())
+				.location(actor.getLocation())
+				.biography(actor.getBiography())
 				.build();
 	}
 	

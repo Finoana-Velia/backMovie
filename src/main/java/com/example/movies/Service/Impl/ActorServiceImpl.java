@@ -50,17 +50,21 @@ public class ActorServiceImpl implements ActorService{
 
 	@Override
 	public ActorDto update(Long id, ActorDto actor) {
+		Actor actorFind = this.actorRepository.findById(id).orElseThrow();
+		if(actor.getProfile() == null) {
+			actor.setProfile(actorFind.getProfile());
+		}
 		Actor actorMapper = entityMapper.toEntityActor(actor);
-		return this.actorRepository.findById(id)
-				.map(actorUpdated -> this.actorRepository.save(actorMapper))
-				.map(actorInit -> entityMapper.toDtoActor(actorMapper))
-				.orElseThrow();
+		Actor actorUpdated = this.actorRepository.save(actorMapper);
+		return entityMapper.toDtoActor(actorUpdated);
 	}
 
 	@Override
 	public void delete(Long id) {
 		this.actorRepository.deleteById(id);
 	}
+
+	
 	
 	
 

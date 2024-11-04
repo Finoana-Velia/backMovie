@@ -10,7 +10,7 @@ import com.example.movies.Entity.Actor;
 
 public interface ActorRepository extends JpaRepository<Actor, Long>{
 	
-	@Query("select a from Actor a where a.firstName like :x")
+	@Query("select a from Actor a where a.name like :x")
 	Page<Actor> searchByName(@Param("x")String name,Pageable pageable);
 
 }
