@@ -8,6 +8,7 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,6 +25,7 @@ import com.example.movies.Core.FileUploader;
 import com.example.movies.Dto.MovieRequestDto;
 import com.example.movies.Dto.MovieResponseDto;
 import com.example.movies.Entity.Movie;
+import com.example.movies.Repository.MovieRepository;
 import com.example.movies.Service.Impl.MovieServiceImpl;
 
 @RestController
@@ -32,10 +34,13 @@ public class MovieController {
 	
 	private final MovieServiceImpl movieService;
 	private final FileUploader fileUploader;
+	private final MovieRepository movieRepository;
 	
 	public MovieController(
+			MovieRepository movieRepository,
 			MovieServiceImpl movieService,
 			FileUploader fileUploader) {
+		this.movieRepository = movieRepository;
 		this.movieService = movieService;
 		this.fileUploader = fileUploader;
 	}
@@ -43,6 +48,12 @@ public class MovieController {
 	@GetMapping
 	public ResponseEntity<List<MovieResponseDto>> findAll() {
 		List<MovieResponseDto> movies = this.movieService.findAll();
+		return ResponseEntity.status(HttpStatus.OK).body(movies);
+	}
+	
+	@GetMapping("/actor/{id}")
+	public ResponseEntity<List<MovieResponseDto>> findByActorId(@PathVariable Long id) {
+		List<MovieResponseDto> movies = this.movieService.findByActorId(id);
 		return ResponseEntity.status(HttpStatus.OK).body(movies);
 	}
 	
@@ -69,11 +80,11 @@ public class MovieController {
 		MovieResponseDto movie = this.movieService.findById(id);
 		return ResponseEntity.status(HttpStatus.OK).body(movie);
 	}
-
+	
 	@PostMapping
 	public ResponseEntity<MovieResponseDto> create(
-			@RequestParam MultipartFile file,
-			MovieRequestDto movie
+			MovieRequestDto movie,
+			@RequestParam MultipartFile file
 			)  throws Exception{
 		MovieResponseDto movieResponse;
 		if(!file.isEmpty()) {
@@ -90,12 +101,12 @@ public class MovieController {
 	
 	@PutMapping("/{id}")
 	public ResponseEntity<MovieResponseDto> update(
-			@RequestParam MultipartFile file,
 			@PathVariable Long id,
-			MovieRequestDto movie
+			MovieRequestDto movie,
+			@RequestParam(required=false) MultipartFile file
 			) throws Exception{
 		MovieResponseDto movieResponse;
-		if(!file.isEmpty()) {
+		if(file != null) {
 			movie.setJacket(file.getOriginalFilename());
 			movieResponse = this.movieService.update(id,movie);
 			this.fileUploader.updateFile(file, "movie", id);

@@ -15,14 +15,14 @@ import com.example.movies.Repository.ActorRepository;
 @Configuration
 public class DataGenerationConfig {
 	
-	@Bean
-	CommandLineRunner commandLineRunner(
-			ActorRepository actorRepository
-			) {
-		return args -> {
-			actorRepository.saveAll(generateActor());
-		};
-	}
+//	@Bean
+//	CommandLineRunner commandLineRunner(
+//			ActorRepository actorRepository
+//			) {
+//		return args -> {
+//			actorRepository.saveAll(generateActor());
+//		};
+//	}
 	
 	private List<Actor> generateActor() {
 		Actor diesel = Actor.builder()

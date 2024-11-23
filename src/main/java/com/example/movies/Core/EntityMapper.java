@@ -1,5 +1,7 @@
 package com.example.movies.Core;
 
+import java.time.LocalDate;
+
 import org.springframework.stereotype.Service;
 
 import com.example.movies.Dto.ActorDto;
@@ -18,6 +20,10 @@ public class EntityMapper {
 				.jacket(movieEntity.getJacket())
 				.title(movieEntity.getTitle())
 				.duration(movieEntity.getDuration())
+				.type(movieEntity.getType())
+				.release(movieEntity.getRelease())
+				.description(movieEntity.getDescription())
+				.actors(movieEntity.getActors())
 				.build();
 	}
 	
@@ -51,6 +57,9 @@ public class EntityMapper {
 				.jacket(movieRequest.getJacket())
 				.title(movieRequest.getTitle())
 				.duration(movieRequest.getDuration())
+				.type(movieRequest.getType())
+				.release(LocalDate.parse(movieRequest.getRelease()))
+				.description(movieRequest.getDescription())
 				.build();
 	}
 	

@@ -1,7 +1,9 @@
 package com.example.movies.Service.Impl;
 
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,7 +12,9 @@ import org.springframework.web.servlet.function.EntityResponse;
 
 import com.example.movies.Dto.MovieRequestDto;
 import com.example.movies.Dto.MovieResponseDto;
+import com.example.movies.Entity.Actor;
 import com.example.movies.Entity.Movie;
+import com.example.movies.Repository.ActorRepository;
 import com.example.movies.Repository.MovieRepository;
 import com.example.movies.Service.MovieService;
 import com.example.movies.Core.EntityMapper;
@@ -22,6 +26,7 @@ import lombok.AllArgsConstructor;
 public class MovieServiceImpl implements MovieService{
 	
 	private final MovieRepository movieRepository;
+	private final ActorRepository actorRepository;
 	private final EntityMapper entityMapper;
 
 	@Override
@@ -29,6 +34,13 @@ public class MovieServiceImpl implements MovieService{
 		return this.movieRepository.findAll()
 				.stream()
 				.map(movie -> entityMapper.toResponseMovie(movie))
+				.toList();
+	}
+	
+	@Override
+	public List<MovieResponseDto> findByActorId(Long id) {
+		return this.movieRepository.findByActorId(id)
+				.stream().map(movie -> entityMapper.toResponseMovie(movie))
 				.toList();
 	}
 	
@@ -55,6 +67,12 @@ public class MovieServiceImpl implements MovieService{
 	@Override
 	public MovieResponseDto create(MovieRequestDto movie) {
 		Movie movieMapper = entityMapper.toEntityMovie(movie);
+		Set<Actor> actorList = new HashSet<>();
+		movie.getActors().forEach(idActors -> {
+			Actor actorFound = this.actorRepository.findById(idActors).orElseThrow();
+			actorList.add(actorFound);
+		});
+		movieMapper.setActors(actorList);
 		Movie movieSaved = this.movieRepository.save(movieMapper);
 		//Movie movieSaved = this.movieRepository.save(movie);
 		return entityMapper.toResponseMovie(movieSaved);
@@ -64,7 +82,19 @@ public class MovieServiceImpl implements MovieService{
 	public MovieResponseDto update(Long id, MovieRequestDto movie) {
 		Movie movieMapper = entityMapper.toEntityMovie(movie);
 		return this.movieRepository.findById(id)
-				.map(movieUpdate -> entityMapper.toResponseMovie(this.movieRepository.save(movieMapper)))
+				.map(movieFound -> {
+					if(movie.getJacket() == null) {
+						movie.setJacket(movieFound.getJacket());
+					}
+					Set<Actor> actorList = new HashSet<>();
+					movie.getActors().forEach(idActor -> {
+						Actor actorFound = this.actorRepository.findById(idActor).orElseThrow();
+						actorList.add(actorFound);
+					});
+					movieMapper.setActors(actorList);
+					Movie movieSaved = this.movieRepository.save(movieMapper);
+					return entityMapper.toResponseMovie(movieSaved);
+				})
 				.orElseThrow();
 	}
 
@@ -73,4 +103,5 @@ public class MovieServiceImpl implements MovieService{
 		this.movieRepository.deleteById(id);
 	}
 
+	
 }
