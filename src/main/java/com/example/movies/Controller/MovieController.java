@@ -71,7 +71,7 @@ public class MovieController {
 	@GetMapping("/jacket")
 	@ResponseBody
 	public byte[] getJacket(Long id) throws Exception {
-		File file = this.fileUploader.getFile(id);
+		File file = this.fileUploader.getFile(id,"movie");
 		return IOUtils.toByteArray(new FileInputStream(file));
 	}
 	

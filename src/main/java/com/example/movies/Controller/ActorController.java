@@ -113,7 +113,7 @@ public class ActorController {
 	@GetMapping("/getImage")
 	@ResponseBody
 	public byte[] getPhoto(Long id) throws Exception {
-		File file = this.fileUploader.getFile(id);
+		File file = this.fileUploader.getFile(id,"actor");
 		if(file.exists()) {
 			return IOUtils.toByteArray(new FileInputStream(file));
 		}else {

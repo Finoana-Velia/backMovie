@@ -62,7 +62,8 @@ public class FileUploader {
 		}
  	} 
 	
-	public File getFile(Long id) {
+	public File getFile(Long id,String folderName) {
+		filePath = folderPath + "/"+folderName+"/";
 		File file = new File(filePath + id);
 		if(file.exists()) {
 			return file;
