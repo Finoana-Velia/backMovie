@@ -14,6 +14,7 @@ import com.example.movies.Dto.MovieRequestDto;
 import com.example.movies.Dto.MovieResponseDto;
 import com.example.movies.Entity.Actor;
 import com.example.movies.Entity.Movie;
+import com.example.movies.Exceptions.ResourceNotFoundException;
 import com.example.movies.Repository.ActorRepository;
 import com.example.movies.Repository.MovieRepository;
 import com.example.movies.Service.MovieService;
@@ -61,7 +62,9 @@ public class MovieServiceImpl implements MovieService{
 	public MovieResponseDto findById(Long id) {
 		return this.movieRepository.findById(id)
 				.map(movie -> entityMapper.toResponseMovie(movie))
-				.orElseThrow();
+				.orElseThrow(
+						() -> new ResourceNotFoundException("Movie with id " + id + " is not found")
+						);
 	}
 
 	@Override
@@ -95,7 +98,9 @@ public class MovieServiceImpl implements MovieService{
 					Movie movieSaved = this.movieRepository.save(movieMapper);
 					return entityMapper.toResponseMovie(movieSaved);
 				})
-				.orElseThrow();
+				.orElseThrow(
+						() -> new ResourceNotFoundException("Movie with id " + id + " is not found")
+						);
 	}
 
 	@Override

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.example.movies.Core.EntityMapper;
 import com.example.movies.Dto.ActorDto;
 import com.example.movies.Entity.Actor;
+import com.example.movies.Exceptions.ResourceNotFoundException;
 import com.example.movies.Repository.ActorRepository;
 import com.example.movies.Service.ActorService;
 
@@ -38,7 +39,9 @@ public class ActorServiceImpl implements ActorService{
 	public ActorDto findById(Long id) {
 		return this.actorRepository.findById(id)
 				.map(actor -> entityMapper.toDtoActor(actor))
-				.orElseThrow();
+				.orElseThrow(
+						() ->  new ResourceNotFoundException("Actor with id " + id + " is not found")
+						);
 	}
 
 	@Override
@@ -50,7 +53,9 @@ public class ActorServiceImpl implements ActorService{
 
 	@Override
 	public ActorDto update(Long id, ActorDto actor) {
-		Actor actorFind = this.actorRepository.findById(id).orElseThrow();
+		Actor actorFind = this.actorRepository.findById(id).orElseThrow(
+				() -> new ResourceNotFoundException("Actor with id " + id + " is not found")
+				);
 		if(actor.getProfile() == null) {
 			actor.setProfile(actorFind.getProfile());
 		}
