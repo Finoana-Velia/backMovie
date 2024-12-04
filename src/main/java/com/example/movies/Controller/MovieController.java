@@ -81,6 +81,14 @@ public class MovieController {
 		return ResponseEntity.status(HttpStatus.OK).body(movie);
 	}
 	
+	@GetMapping("/type/{type}")
+	public ResponseEntity<List<MovieResponseDto>> findByType(
+			@PathVariable String type
+			){
+		return ResponseEntity.status(HttpStatus.OK)
+				.body(this.movieService.findMovieByType(type));
+	}
+	
 	@PostMapping
 	public ResponseEntity<MovieResponseDto> create(
 			MovieRequestDto movie,

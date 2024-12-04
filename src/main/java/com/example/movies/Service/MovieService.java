@@ -14,6 +14,7 @@ public interface MovieService {
 	List<MovieResponseDto> findByTitle(String title);
 	List<MovieResponseDto> findByActorId(Long id);
 	Page<MovieResponseDto> searchByTitl(String title,Pageable pageable);
+	List<MovieResponseDto> findMovieByType(String type);
 	MovieResponseDto findById(Long id);
 	MovieResponseDto create(MovieRequestDto movie);
 	MovieResponseDto update(Long id,MovieRequestDto movie);

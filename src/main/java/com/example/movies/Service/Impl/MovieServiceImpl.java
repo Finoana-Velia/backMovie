@@ -108,5 +108,12 @@ public class MovieServiceImpl implements MovieService{
 		this.movieRepository.deleteById(id);
 	}
 
+	@Override
+	public List<MovieResponseDto> findMovieByType(String type) {
+		return this.movieRepository.findMovieByType(type).stream()
+				.map(movie -> entityMapper.toResponseMovie(movie))
+				.toList();
+	}
+
 	
 }
