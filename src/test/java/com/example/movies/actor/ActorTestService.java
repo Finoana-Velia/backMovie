@@ -56,8 +56,8 @@ public class ActorTestService {
 		when(actorRepository.findAll()).thenReturn(actorList);
 		List<ActorDto> actorListResponse = actorService.findAll();
 		assertAll(
-				() -> assertNotNull(actorListResponse)
-//				() -> assertEquals("Chris Evans",actorListResponse.get(0).getName())
+				() -> assertNotNull(actorListResponse),
+				() -> assertEquals("Chris Evans",actorListResponse.get(0).getName())
 		);
 	}
 	
